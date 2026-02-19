@@ -1,36 +1,47 @@
+# Database Setup and Schema
+
+# Import necessary libraries
 import sqlite3
+from sqlite3 import Error
 
-def initialize_database():
-    # Create a new database or connect to an existing one
-    conn = sqlite3.connect('sensor_database.db')
-    c = conn.cursor()
+# Create a database connection
 
-    # Create sensors table
-    c.execute('''CREATE TABLE IF NOT EXISTS sensors (
-                    id INTEGER PRIMARY KEY,
-                    name TEXT NOT NULL,
-                    type TEXT NOT NULL
-                )''')
+def create_connection(db_file):
+    """ create a database connection to the SQLite database """ 
+    conn = None
+    try:
+        conn = sqlite3.connect(db_file)
+        print(f"Connected to database: {db_file}")
+    except Error as e:
+        print(e)
+    return conn
 
-    # Create users table
-    c.execute('''CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER PRIMARY KEY,
-                    username TEXT NOT NULL UNIQUE,
-                    password TEXT NOT NULL
-                )''')
+# Create a table
 
-    # Create sensor_data table
-    c.execute('''CREATE TABLE IF NOT EXISTS sensor_data (
-                    id INTEGER PRIMARY KEY,
-                    sensor_id INTEGER,
-                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    value REAL,
-                    FOREIGN KEY (sensor_id) REFERENCES sensors (id)
-                )''')
+def create_table(conn):
+    """ create a table in the database """ 
+    try:
+        sql_create_table = '''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE
+        );
+        '''
+        cursor = conn.cursor()
+        cursor.execute(sql_create_table)
+        print("Table 'users' created successfully.")
+    except Error as e:
+        print(e)
 
-    # Commit the changes and close the connection
-    conn.commit()
-    conn.close()
+# Main function to setup database
+
+def main():
+    database = "db.sqlite"
+    conn = create_connection(database)
+    if conn:
+        create_table(conn)
+        conn.close()
 
 if __name__ == '__main__':
-    initialize_database()
+    main()
